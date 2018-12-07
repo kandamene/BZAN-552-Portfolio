@@ -4,7 +4,8 @@ output: rmarkdown::github_document
 ---
 
 ```{r}
-state_full <- read.csv("GEODA/STATE/state_full_edit.csv", row.names = 1)
+library(foreign)
+state_full <- read.csv("C:/Users/Abdul Rashid/Documents/GitHub/BZAN-552-Portfolio/state_full_edit.csv", row.names = 1)
 states <- as.matrix(state_full[,1:17])
 
 par(mfrow=c(6,6))
