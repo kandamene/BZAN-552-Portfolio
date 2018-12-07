@@ -1,0 +1,92 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{r}
+state_full <- read.csv("GEODA/STATE/state_full_edit.csv", row.names = 1)
+states <- as.matrix(state_full[,1:17])
+
+par(mfrow=c(6,6))
+par(mar=c(2,2,1,0))
+for(i in 1:51){
+    plot(states[i,], main=rownames(states)[i], type="l")
+}
+```
+```{r}
+library(wmtsa)
+library(pdc)
+library(cluster)
+library(TSclust)
+```
+
+```{r}
+D1 <- diss(states, "COR")
+summary(D1)
+
+library(reshape2)
+melted_cormat <- melt(as.matrix(D1))
+head(melted_cormat)
+
+library(ggplot2)
+ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) + 
+  geom_tile()
+```
+## Correlation
+
+Correlation is an obvious option when considering the degree of similarity between time series. Generating a dissimilarity matrix is simple.
+
+Note that, since this is a measure of dissimilarity, the range of correlation has been shifted from [-1,1] to [0,2].
+
+Which stocks present the most unique time series?
+
+```{r}
+sort(rowMeans(as.matrix(D1)))
+```
+
+Now let's use those data to do some hierarchical clustering.
+
+```{r}
+C1 <- hclust(D1)
+plot(C1)
+```
+
+## Dynamic Time Warping Distance
+
+Dynamic Time Warping is a technique for comparing time series where the timing or the tempo of the variations may vary between the series.
+
+```{r}
+D2 <- diss(states, "DTWARP")
+```
+
+Since the dissimilarity matrix is similar to one we've already looked at, we'll try a different approach to clustering, using the Partitioning Around Medoids (PAM) algorithm.
+
+```{r}
+library(cluster)
+pam.result <- pam(D2, 5)
+plot(pam.result)
+```
+
+## Integrated Periodogram Distance
+
+The integrated Periodogram is a variation of the periodogram where the power is accumulated as a function of frequency. This is a more robust measure for the purposes of comparing spectra. Signals with comparable integrated periodograms will contain variations at similar frequencies.
+
+```{r}
+D3 <- diss(states, "INT.PER")
+```
+
+The dissimilarity matrix paints yet another picture of the data. 
+
+```{r}
+pam.result2 <- pam(D3, 5)
+plot(pam.result2)
+```
+
+```{r}
+par(mfrow=c(5,6))
+par(mar=c(2,2,1,0))
+for(i in 1:nrow(states)){
+    plot(states[i,], main=rownames(states)[i], type="l", col=pam.result$clustering[i]+1,lwd=2)
+}
+```
+
