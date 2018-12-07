@@ -1,6 +1,8 @@
 ---
-title: "Untitled"
-output: rmarkdown::github_document
+title: "Post Test"
+output: 
+  html_document:
+    keep_md: true
 ---
 
 ```{r}
