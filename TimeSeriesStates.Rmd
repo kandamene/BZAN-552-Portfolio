@@ -87,6 +87,7 @@ plot(1:10,SSEs,type="b",xlab="Number of Clusters")
 Here we can see that 4 clusters is an appropriate number of clusters.
 
 ##Heirarchical Clustering
+
 Another way to cluster data is by heirarchical clustering which produces a set of nested clusters organized as a hierarchical tree.
 
 ```{r}
@@ -117,6 +118,7 @@ Since the dissimilarity matrix is similar to one we've already looked at, we see
 
 
 ##Partitioning Around Medoids (PAM) algorithm.
+
 PAM (Partitioning Around Medoids) is a classic algorithm for k-medoids clustering.
 The silhouette plot displays a measure of how close each point in one cluster is to points in the neighboring clusters and thus provides a way to assess parameters like number of clusters visually.
 

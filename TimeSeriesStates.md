@@ -182,25 +182,25 @@ fit$center  # centers of each variable
 
 ```
 ##   crshcnt00per crshcnt01per crshcnt02per crshcnt03per crshcnt04per
-## 1     19.97506    19.173583     18.99363     18.70219     18.13238
-## 2     13.62501    13.254975     13.61241     12.91526     11.90178
-## 3     24.18533    27.228214     25.79072     24.39341     24.12954
-## 4     10.25916     8.564539      7.98363     10.20242      8.72432
+## 1     16.66152     16.57786     17.26029     15.87827    15.672464
+## 2     26.04928     34.63553     30.81396     28.33141    28.987331
+## 3     24.65962     23.56865     22.55088     23.40055    21.485930
+## 4     11.47722     10.47480     10.10366     11.08070     9.800267
 ##   crshcnt05per crshcnt06per crshcnt07per crshcnt08per crshcnt09per
-## 1    20.303235    19.408157    19.145347     16.45236    16.667146
-## 2    12.166877    12.149316    12.803386     10.93843    10.209325
-## 3    25.397175    27.981436    24.020214     22.38333    19.461631
-## 4     8.499647     6.691679     7.797594      7.02581     6.489597
+## 1    16.049600    15.504020    15.969182    14.380775    13.754474
+## 2    31.967987    32.796805    27.704869    23.112921    22.298851
+## 3    24.139560    26.241348    23.754063    20.177714    18.190559
+## 4     9.967707     9.059461     9.720499     8.632812     8.094545
 ##   crshcnt10per crshcnt11per crshcnt12per crshcnt13per crshcnt14per
-## 1    16.731663    15.759041    16.755147    16.593157    16.986528
-## 2    10.726813    11.325590    11.977484    12.180805    12.293461
-## 3    19.787846    21.064399    24.685657    23.282502    26.331833
-## 4     7.103498     7.385221     8.311363     7.254892     7.699492
+## 1    14.466373    14.363812     15.37509    14.932067    15.699995
+## 2    20.883123    22.214398     26.96614    24.490791    32.784906
+## 3    19.613162    18.943973     21.22369    20.601824    21.336421
+## 4     8.178329     8.883941      9.63316     9.455698     9.412503
 ##   crshcnt15per crshcnt16per
-## 1    18.525592    19.408051
-## 2    13.450134    14.442946
-## 3    26.622092    29.406539
-## 4     8.470932     9.443583
+## 1     17.40782     18.65856
+## 2     28.48879     33.35521
+## 3     23.75872     24.45429
+## 4     10.00157     11.03495
 ```
 
 ```r
@@ -209,39 +209,39 @@ fit$cluster # cluster ID for each observation
 
 ```
 ##              Alabama               Alaska              Arizona 
-##                    1                    2                    3 
+##                    1                    1                    3 
 ##             Arkansas           California             Colorado 
-##                    2                    1                    2 
+##                    1                    1                    4 
 ##          Connecticut             Delaware District of Columbia 
-##                    2                    3                    1 
+##                    4                    3                    3 
 ##              Florida              Georgia               Hawaii 
-##                    3                    1                    1 
+##                    2                    1                    3 
 ##                Idaho             Illinois              Indiana 
-##                    4                    2                    2 
+##                    4                    4                    4 
 ##                 Iowa               Kansas             Kentucky 
-##                    4                    4                    2 
+##                    4                    4                    1 
 ##            Louisiana                Maine             Maryland 
 ##                    3                    4                    1 
 ##        Massachusetts             Michigan            Minnesota 
-##                    2                    2                    4 
+##                    4                    1                    4 
 ##          Mississippi             Missouri              Montana 
-##                    1                    2                    2 
+##                    1                    1                    4 
 ##             Nebraska               Nevada        New Hampshire 
 ##                    4                    3                    4 
 ##           New Jersey           New Mexico             New York 
-##                    1                    3                    1 
+##                    1                    2                    1 
 ##       North Carolina         North Dakota                 Ohio 
 ##                    1                    4                    4 
 ##             Oklahoma               Oregon         Pennsylvania 
-##                    2                    2                    2 
+##                    1                    1                    4 
 ##         Rhode Island       South Carolina         South Dakota 
-##                    2                    3                    4 
+##                    4                    3                    4 
 ##            Tennessee                Texas                 Utah 
-##                    2                    1                    2 
+##                    1                    1                    4 
 ##              Vermont             Virginia           Washington 
-##                    4                    2                    2 
+##                    4                    4                    4 
 ##        West Virginia            Wisconsin              Wyoming 
-##                    2                    4                    4
+##                    4                    4                    4
 ```
 We can observe from the cluster means that cluster 3 has the largest mean crash rate values and cluster 4 has the lowest
 
@@ -270,6 +270,7 @@ plot(1:10,SSEs,type="b",xlab="Number of Clusters")
 Here we can see that 4 clusters is an appropriate number of clusters.
 
 ##Heirarchical Clustering
+
 Another way to cluster data is by heirarchical clustering which produces a set of nested clusters organized as a hierarchical tree.
 
 
@@ -318,6 +319,7 @@ Since the dissimilarity matrix is similar to one we've already looked at, we see
 
 
 ##Partitioning Around Medoids (PAM) algorithm.
+
 PAM (Partitioning Around Medoids) is a classic algorithm for k-medoids clustering.
 The silhouette plot displays a measure of how close each point in one cluster is to points in the neighboring clusters and thus provides a way to assess parameters like number of clusters visually.
 
