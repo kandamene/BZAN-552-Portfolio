@@ -1,16 +1,25 @@
 ---
-title: "Post Test"
+title: "Post 2 Clustering"
 output: 
   html_document:
     keep_md: true
 ---
+## Data
+This exercise utilises data from the 50 states of the United States and the District of Columbia. The dataset contains car crash counts from the year 2000 to the year 2016, and corresponding yearly population numbers. As such the crash rate (crash count per million poulation) numbers have been computed and included as a stadardised measure in the data. 
 
 
 
 ```r
 library(foreign)
-state_full <- read.csv("state_full_edit.csv", row.names = 1)
-states <- as.matrix(state_full[,1:17])
+```
+
+```
+## Warning: package 'foreign' was built under R version 3.4.4
+```
+
+```r
+state_full <- read.csv("state_full_edit.csv", row.names = 1) #adding the data to R
+states <- as.matrix(state_full[,68:84]) #select the crash rate data for the time series clustering
 
 par(mfrow=c(6,6))
 par(mar=c(2,2,1,0))
@@ -54,6 +63,12 @@ library(TSclust)
 ## Warning: package 'TSclust' was built under R version 3.4.4
 ```
 
+## Correlation
+
+Correlation is a good option when considering the degree of similarity between time series. 
+Since this is a measure of dissimilarity, the range of correlation has been shifted from [-1,1] to [0,2].
+
+
 
 ```r
 D1 <- diss(states, "COR")
@@ -62,7 +77,7 @@ summary(D1)
 
 ```
 ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-##  0.5584  1.0734  1.2595  1.2385  1.4054  1.7966
+##  0.6096  1.0716  1.2460  1.2348  1.4002  1.8108
 ```
 
 ```r
@@ -79,13 +94,13 @@ head(melted_cormat)
 ```
 
 ```
-##         Var1    Var2     value
-## 1    Alabama Alabama 0.0000000
-## 2     Alaska Alabama 1.0578086
-## 3    Arizona Alabama 1.0206734
-## 4   Arkansas Alabama 1.3481277
-## 5 California Alabama 0.8954261
-## 6   Colorado Alabama 1.1064492
+##         Var1    Var2    value
+## 1    Alabama Alabama 0.000000
+## 2     Alaska Alabama 1.130464
+## 3    Arizona Alabama 1.307207
+## 4   Arkansas Alabama 1.509972
+## 5 California Alabama 1.112689
+## 6   Colorado Alabama 1.259293
 ```
 
 ```r
@@ -102,13 +117,15 @@ ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) +
 ```
 
 ![](TimeSeriesStates_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
-## Correlation
 
-Correlation is an obvious option when considering the degree of similarity between time series. Generating a dissimilarity matrix is simple.
+```r
+library(ggplot2)
+ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) + 
+  geom_tile()+scale_fill_gradient(low="red", high="blue")
+```
 
-Note that, since this is a measure of dissimilarity, the range of correlation has been shifted from [-1,1] to [0,2].
+![](TimeSeriesStates_files/figure-html/unnamed-chunk-3-2.png)<!-- -->
 
-Which stocks present the most unique time series?
 
 
 ```r
@@ -116,51 +133,156 @@ sort(rowMeans(as.matrix(D1)))
 ```
 
 ```
-##           California                Texas               Oregon 
-##             1.041069             1.044466             1.077511 
-##               Kansas              Georgia             Missouri 
-##             1.081472             1.092732             1.095058 
-##             Virginia           Washington                 Ohio 
-##             1.099347             1.104251             1.108629 
-##               Nevada              Alabama              Florida 
-##             1.113183             1.115872             1.116230 
-##             Oklahoma           New Mexico       North Carolina 
-##             1.120586             1.142477             1.142737 
-##              Indiana             Kentucky             Colorado 
-##             1.142832             1.143087             1.143447 
-##             Michigan       South Carolina              Arizona 
-##             1.144615             1.153799             1.155066 
-##                Maine                 Utah         Pennsylvania 
-##             1.167469             1.170046             1.184262 
-##            Tennessee             Nebraska             Delaware 
-##             1.192865             1.193759             1.197084 
-##            Louisiana          Connecticut               Alaska 
-##             1.198864             1.203413             1.222382 
-##        Massachusetts               Hawaii            Minnesota 
-##             1.234745             1.236954             1.243114 
-##           New Jersey             Illinois        New Hampshire 
-##             1.254036             1.255605             1.256152 
-##        West Virginia          Mississippi                Idaho 
-##             1.275165             1.291359             1.295969 
-##                 Iowa             Arkansas              Wyoming 
-##             1.308754             1.311796             1.322837 
-##            Wisconsin              Vermont         North Dakota 
-##             1.326415             1.336829             1.343009 
-##             New York         South Dakota              Montana 
-##             1.361321             1.395904             1.415993 
-## District of Columbia         Rhode Island             Maryland 
-##             1.418500             1.432278             1.498458
+##           California                Texas             Missouri 
+##             1.031602             1.048472             1.061889 
+##             Virginia             Michigan           Washington 
+##             1.071774             1.088659             1.100849 
+##         Pennsylvania             Illinois              Georgia 
+##             1.101045             1.104747             1.106251 
+##             Colorado           New Mexico               Oregon 
+##             1.112992             1.113909             1.119828 
+##               Nevada               Kansas              Arizona 
+##             1.121670             1.126430             1.129488 
+##       North Carolina              Florida               Hawaii 
+##             1.130228             1.131961             1.156634 
+##             Nebraska                 Utah                Maine 
+##             1.169649             1.173741             1.176068 
+##                 Ohio            Tennessee             Kentucky 
+##             1.182581             1.184476             1.187551 
+##            Minnesota             Oklahoma               Alaska 
+##             1.190000             1.211159             1.212866 
+##        West Virginia              Alabama        Massachusetts 
+##             1.214040             1.214062             1.215868 
+##       South Carolina          Connecticut              Indiana 
+##             1.218364             1.231373             1.242461 
+##             New York            Louisiana              Wyoming 
+##             1.246042             1.249479             1.253759 
+##          Mississippi        New Hampshire           New Jersey 
+##             1.262398             1.273814             1.274504 
+##             Delaware            Wisconsin         South Dakota 
+##             1.285499             1.289132             1.289247 
+##                Idaho                 Iowa              Vermont 
+##             1.295099             1.300678             1.325001 
+## District of Columbia             Arkansas         North Dakota 
+##             1.352390             1.354711             1.417224 
+##              Montana             Maryland         Rhode Island 
+##             1.451033             1.457964             1.478915
 ```
 
-Now let's use those data to do some hierarchical clustering.
+##Clustering
+
+Clustering allows us to group similar data elements together.
+Since we computed the means of the crash rates we can use k-means clustering to group similar states
 
 
 ```r
-C1 <- hclust(D1)
-plot(C1)
+fit <- kmeans(states, 4)
+fit$center  # centers of each variable
 ```
 
-![](TimeSeriesStates_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
+```
+##   crshcnt00per crshcnt01per crshcnt02per crshcnt03per crshcnt04per
+## 1     19.97506    19.173583     18.99363     18.70219     18.13238
+## 2     13.62501    13.254975     13.61241     12.91526     11.90178
+## 3     24.18533    27.228214     25.79072     24.39341     24.12954
+## 4     10.25916     8.564539      7.98363     10.20242      8.72432
+##   crshcnt05per crshcnt06per crshcnt07per crshcnt08per crshcnt09per
+## 1    20.303235    19.408157    19.145347     16.45236    16.667146
+## 2    12.166877    12.149316    12.803386     10.93843    10.209325
+## 3    25.397175    27.981436    24.020214     22.38333    19.461631
+## 4     8.499647     6.691679     7.797594      7.02581     6.489597
+##   crshcnt10per crshcnt11per crshcnt12per crshcnt13per crshcnt14per
+## 1    16.731663    15.759041    16.755147    16.593157    16.986528
+## 2    10.726813    11.325590    11.977484    12.180805    12.293461
+## 3    19.787846    21.064399    24.685657    23.282502    26.331833
+## 4     7.103498     7.385221     8.311363     7.254892     7.699492
+##   crshcnt15per crshcnt16per
+## 1    18.525592    19.408051
+## 2    13.450134    14.442946
+## 3    26.622092    29.406539
+## 4     8.470932     9.443583
+```
+
+```r
+fit$cluster # cluster ID for each observation
+```
+
+```
+##              Alabama               Alaska              Arizona 
+##                    1                    2                    3 
+##             Arkansas           California             Colorado 
+##                    2                    1                    2 
+##          Connecticut             Delaware District of Columbia 
+##                    2                    3                    1 
+##              Florida              Georgia               Hawaii 
+##                    3                    1                    1 
+##                Idaho             Illinois              Indiana 
+##                    4                    2                    2 
+##                 Iowa               Kansas             Kentucky 
+##                    4                    4                    2 
+##            Louisiana                Maine             Maryland 
+##                    3                    4                    1 
+##        Massachusetts             Michigan            Minnesota 
+##                    2                    2                    4 
+##          Mississippi             Missouri              Montana 
+##                    1                    2                    2 
+##             Nebraska               Nevada        New Hampshire 
+##                    4                    3                    4 
+##           New Jersey           New Mexico             New York 
+##                    1                    3                    1 
+##       North Carolina         North Dakota                 Ohio 
+##                    1                    4                    4 
+##             Oklahoma               Oregon         Pennsylvania 
+##                    2                    2                    2 
+##         Rhode Island       South Carolina         South Dakota 
+##                    2                    3                    4 
+##            Tennessee                Texas                 Utah 
+##                    2                    1                    2 
+##              Vermont             Virginia           Washington 
+##                    4                    2                    2 
+##        West Virginia            Wisconsin              Wyoming 
+##                    2                    4                    4
+```
+We can observe from the cluster means that cluster 3 has the largest mean crash rate values and cluster 4 has the lowest
+
+## Determining number of clusters with SSE
+
+To determine the appropriate number of clusters to use, we can apply sum of square errors and create a scree plot to determine which number of cluster will be best for us.
+
+```r
+# determining number of clusters with SSE
+SSEs <- rep(NA,10) # a vector to store SSEs for different k's
+SSEs[1] <- fit$totss # total SSE if no clustering is done
+for(k in 2:10){
+	fit <- kmeans(states, k)
+	SSEs[k] <- fit$tot.withinss
+}
+par(mar=c(4,4,1,1))
+#pdf("../LaTeX/figs/scree.pdf",width=5.5,height=4.25)
+plot(1:10,SSEs,type="b",xlab="Number of Clusters")
+```
+
+![](TimeSeriesStates_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
+
+```r
+#dev.off()
+```
+Here we can see that 4 clusters is an appropriate number of clusters.
+
+##Heirarchical Clustering
+Another way to cluster data is by heirarchical clustering which produces a set of nested clusters organized as a hierarchical tree.
+
+
+```r
+C1 <- hclust(D1, method="ward.D")
+plot(C1) # display dendogram
+
+groups <- cutree(C1, k=4)
+# draw dendogram with red borders around the 3 clusters
+rect.hclust(C1, k=4, border="red")
+```
+
+![](TimeSeriesStates_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
 
 ## Dynamic Time Warping Distance
 
@@ -169,18 +291,44 @@ Dynamic Time Warping is a technique for comparing time series where the timing o
 
 ```r
 D2 <- diss(states, "DTWARP")
+library(reshape2)
+melted_cormat2 <- melt(as.matrix(D2))
+head(melted_cormat2)
 ```
 
-Since the dissimilarity matrix is similar to one we've already looked at, we'll try a different approach to clustering, using the Partitioning Around Medoids (PAM) algorithm.
+```
+##         Var1    Var2     value
+## 1    Alabama Alabama   0.00000
+## 2     Alaska Alabama  76.22682
+## 3    Arizona Alabama 146.59600
+## 4   Arkansas Alabama  46.57576
+## 5 California Alabama  59.41169
+## 6   Colorado Alabama  67.98012
+```
+
+```r
+library(ggplot2)
+ggplot(data = melted_cormat2, aes(x=Var1, y=Var2, fill=value)) + 
+  geom_tile()+scale_fill_gradient(low="blue", high="red")
+```
+
+![](TimeSeriesStates_files/figure-html/unnamed-chunk-8-1.png)<!-- -->
+
+Since the dissimilarity matrix is similar to one we've already looked at, we see that the data range here is from 0 to 600 and the states with high values (red band) are Florida, New Mexico, South Carolina and Arizona
+
+
+##Partitioning Around Medoids (PAM) algorithm.
+PAM (Partitioning Around Medoids) is a classic algorithm for k-medoids clustering.
+The silhouette plot displays a measure of how close each point in one cluster is to points in the neighboring clusters and thus provides a way to assess parameters like number of clusters visually.
 
 
 ```r
 library(cluster)
-pam.result <- pam(D2, 5)
+pam.result <- pam(D2, 4)
 plot(pam.result)
 ```
 
-![](TimeSeriesStates_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
+![](TimeSeriesStates_files/figure-html/unnamed-chunk-9-1.png)<!-- -->
 
 ## Integrated Periodogram Distance
 
@@ -189,17 +337,38 @@ The integrated Periodogram is a variation of the periodogram where the power is 
 
 ```r
 D3 <- diss(states, "INT.PER")
+library(reshape2)
+melted_cormat3 <- melt(as.matrix(D3))
+head(melted_cormat3)
 ```
 
-The dissimilarity matrix paints yet another picture of the data. 
+```
+##         Var1    Var2     value
+## 1    Alabama Alabama 0.0000000
+## 2     Alaska Alabama 1.5391805
+## 3    Arizona Alabama 0.9897779
+## 4   Arkansas Alabama 2.0760348
+## 5 California Alabama 1.7928340
+## 6   Colorado Alabama 1.1395469
+```
+
+```r
+library(ggplot2)
+ggplot(data = melted_cormat3, aes(x=Var1, y=Var2, fill=value)) + 
+  geom_tile()+scale_fill_gradient(low="blue", high="red")
+```
+
+![](TimeSeriesStates_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
+
+This dissimilarity matrix paints yet another picture of the data. with a data value range of 0 to 5.  
 
 
 ```r
-pam.result2 <- pam(D3, 5)
+pam.result2 <- pam(D3, 4)
 plot(pam.result2)
 ```
 
-![](TimeSeriesStates_files/figure-html/unnamed-chunk-9-1.png)<!-- -->
+![](TimeSeriesStates_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
 
 
 ```r
@@ -210,5 +379,6 @@ for(i in 1:nrow(states)){
 }
 ```
 
-![](TimeSeriesStates_files/figure-html/unnamed-chunk-10-1.png)<!-- -->![](TimeSeriesStates_files/figure-html/unnamed-chunk-10-2.png)<!-- -->
+![](TimeSeriesStates_files/figure-html/unnamed-chunk-12-1.png)<!-- -->![](TimeSeriesStates_files/figure-html/unnamed-chunk-12-2.png)<!-- -->
 
+the final output is a visualised set of graphs, of the clustered crash rates shown by colour and displayed by their trends.

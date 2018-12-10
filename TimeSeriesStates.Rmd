@@ -1,17 +1,17 @@
 ---
-title: "Post Test"
+title: "Post 2 Clustering"
 output: 
   html_document:
     keep_md: true
 ---
-```{r setup, include = FALSE, cache = FALSE}  
-knitr::opts_chunk$set(error = TRUE)  
-```
+## Data
+This exercise utilises data from the 50 states of the United States and the District of Columbia. The dataset contains car crash counts from the year 2000 to the year 2016, and corresponding yearly population numbers. As such the crash rate (crash count per million poulation) numbers have been computed and included as a stadardised measure in the data. 
+
 
 ```{r}
 library(foreign)
-state_full <- read.csv("state_full_edit.csv", row.names = 1)
-states <- as.matrix(state_full[,1:17])
+state_full <- read.csv("state_full_edit.csv", row.names = 1) #adding the data to R
+states <- as.matrix(state_full[,68:84]) #select the crash rate data for the time series clustering
 
 par(mfrow=c(6,6))
 par(mar=c(2,2,1,0))
@@ -27,6 +27,12 @@ library(cluster)
 library(TSclust)
 ```
 
+## Correlation
+
+Correlation is a good option when considering the degree of similarity between time series. 
+Since this is a measure of dissimilarity, the range of correlation has been shifted from [-1,1] to [0,2].
+
+
 ```{r}
 D1 <- diss(states, "COR")
 summary(D1)
@@ -38,24 +44,58 @@ head(melted_cormat)
 library(ggplot2)
 ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) + 
   geom_tile()
+
+library(ggplot2)
+ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) + 
+  geom_tile()+scale_fill_gradient(low="red", high="blue")
 ```
-## Correlation
 
-Correlation is an obvious option when considering the degree of similarity between time series. Generating a dissimilarity matrix is simple.
-
-Note that, since this is a measure of dissimilarity, the range of correlation has been shifted from [-1,1] to [0,2].
-
-Which stocks present the most unique time series?
 
 ```{r}
 sort(rowMeans(as.matrix(D1)))
 ```
 
-Now let's use those data to do some hierarchical clustering.
+##Clustering
+
+Clustering allows us to group similar data elements together.
+Since we computed the means of the crash rates we can use k-means clustering to group similar states
 
 ```{r}
-C1 <- hclust(D1)
-plot(C1)
+fit <- kmeans(states, 4)
+fit$center  # centers of each variable
+fit$cluster # cluster ID for each observation
+```
+We can observe from the cluster means that cluster 3 has the largest mean crash rate values and cluster 4 has the lowest
+
+## Determining number of clusters with SSE
+
+To determine the appropriate number of clusters to use, we can apply sum of square errors and create a scree plot to determine which number of cluster will be best for us.
+```{r}
+# determining number of clusters with SSE
+SSEs <- rep(NA,10) # a vector to store SSEs for different k's
+SSEs[1] <- fit$totss # total SSE if no clustering is done
+for(k in 2:10){
+	fit <- kmeans(states, k)
+	SSEs[k] <- fit$tot.withinss
+}
+par(mar=c(4,4,1,1))
+#pdf("../LaTeX/figs/scree.pdf",width=5.5,height=4.25)
+plot(1:10,SSEs,type="b",xlab="Number of Clusters")
+#dev.off()
+
+```
+Here we can see that 4 clusters is an appropriate number of clusters.
+
+##Heirarchical Clustering
+Another way to cluster data is by heirarchical clustering which produces a set of nested clusters organized as a hierarchical tree.
+
+```{r}
+C1 <- hclust(D1, method="ward.D")
+plot(C1) # display dendogram
+
+groups <- cutree(C1, k=4)
+# draw dendogram with red borders around the 3 clusters
+rect.hclust(C1, k=4, border="red")
 ```
 
 ## Dynamic Time Warping Distance
@@ -64,13 +104,25 @@ Dynamic Time Warping is a technique for comparing time series where the timing o
 
 ```{r}
 D2 <- diss(states, "DTWARP")
+library(reshape2)
+melted_cormat2 <- melt(as.matrix(D2))
+head(melted_cormat2)
+
+library(ggplot2)
+ggplot(data = melted_cormat2, aes(x=Var1, y=Var2, fill=value)) + 
+  geom_tile()+scale_fill_gradient(low="blue", high="red")
 ```
 
-Since the dissimilarity matrix is similar to one we've already looked at, we'll try a different approach to clustering, using the Partitioning Around Medoids (PAM) algorithm.
+Since the dissimilarity matrix is similar to one we've already looked at, we see that the data range here is from 0 to 600 and the states with high values (red band) are Florida, New Mexico, South Carolina and Arizona
+
+
+##Partitioning Around Medoids (PAM) algorithm.
+PAM (Partitioning Around Medoids) is a classic algorithm for k-medoids clustering.
+The silhouette plot displays a measure of how close each point in one cluster is to points in the neighboring clusters and thus provides a way to assess parameters like number of clusters visually.
 
 ```{r}
 library(cluster)
-pam.result <- pam(D2, 5)
+pam.result <- pam(D2, 4)
 plot(pam.result)
 ```
 
@@ -80,12 +132,19 @@ The integrated Periodogram is a variation of the periodogram where the power is 
 
 ```{r}
 D3 <- diss(states, "INT.PER")
+library(reshape2)
+melted_cormat3 <- melt(as.matrix(D3))
+head(melted_cormat3)
+
+library(ggplot2)
+ggplot(data = melted_cormat3, aes(x=Var1, y=Var2, fill=value)) + 
+  geom_tile()+scale_fill_gradient(low="blue", high="red")
 ```
 
-The dissimilarity matrix paints yet another picture of the data. 
+This dissimilarity matrix paints yet another picture of the data. with a data value range of 0 to 5.  
 
 ```{r}
-pam.result2 <- pam(D3, 5)
+pam.result2 <- pam(D3, 4)
 plot(pam.result2)
 ```
 
@@ -97,3 +156,4 @@ for(i in 1:nrow(states)){
 }
 ```
 
+the final output is a visualised set of graphs, of the clustered crash rates shown by colour and displayed by their trends.
