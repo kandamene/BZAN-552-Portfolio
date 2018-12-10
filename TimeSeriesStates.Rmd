@@ -10,7 +10,7 @@ knitr::opts_chunk$set(error = TRUE)
 
 ```{r}
 library(foreign)
-state_full <- read.csv("C:/Users/Abdul Rashid/Documents/GitHub/BZAN-552-Portfolio/state_full_edit.csv", row.names = 1)
+state_full <- read.csv("state_full_edit.csv", row.names = 1)
 states <- as.matrix(state_full[,1:17])
 
 par(mfrow=c(6,6))
@@ -19,6 +19,7 @@ for(i in 1:51){
     plot(states[i,], main=rownames(states)[i], type="l")
 }
 ```
+
 ```{r}
 library(wmtsa)
 library(pdc)
