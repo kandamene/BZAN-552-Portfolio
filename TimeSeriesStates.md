@@ -182,25 +182,25 @@ fit$center  # centers of each variable
 
 ```
 ##   crshcnt00per crshcnt01per crshcnt02per crshcnt03per crshcnt04per
-## 1     16.66152     16.57786     17.26029     15.87827    15.672464
-## 2     26.04928     34.63553     30.81396     28.33141    28.987331
-## 3     24.65962     23.56865     22.55088     23.40055    21.485930
-## 4     11.47722     10.47480     10.10366     11.08070     9.800267
+## 1     10.25916     8.564539      7.98363     10.20242      8.72432
+## 2     24.18533    27.228214     25.79072     24.39341     24.12954
+## 3     13.62501    13.254975     13.61241     12.91526     11.90178
+## 4     19.97506    19.173583     18.99363     18.70219     18.13238
 ##   crshcnt05per crshcnt06per crshcnt07per crshcnt08per crshcnt09per
-## 1    16.049600    15.504020    15.969182    14.380775    13.754474
-## 2    31.967987    32.796805    27.704869    23.112921    22.298851
-## 3    24.139560    26.241348    23.754063    20.177714    18.190559
-## 4     9.967707     9.059461     9.720499     8.632812     8.094545
+## 1     8.499647     6.691679     7.797594      7.02581     6.489597
+## 2    25.397175    27.981436    24.020214     22.38333    19.461631
+## 3    12.166877    12.149316    12.803386     10.93843    10.209325
+## 4    20.303235    19.408157    19.145347     16.45236    16.667146
 ##   crshcnt10per crshcnt11per crshcnt12per crshcnt13per crshcnt14per
-## 1    14.466373    14.363812     15.37509    14.932067    15.699995
-## 2    20.883123    22.214398     26.96614    24.490791    32.784906
-## 3    19.613162    18.943973     21.22369    20.601824    21.336421
-## 4     8.178329     8.883941      9.63316     9.455698     9.412503
+## 1     7.103498     7.385221     8.311363     7.254892     7.699492
+## 2    19.787846    21.064399    24.685657    23.282502    26.331833
+## 3    10.726813    11.325590    11.977484    12.180805    12.293461
+## 4    16.731663    15.759041    16.755147    16.593157    16.986528
 ##   crshcnt15per crshcnt16per
-## 1     17.40782     18.65856
-## 2     28.48879     33.35521
-## 3     23.75872     24.45429
-## 4     10.00157     11.03495
+## 1     8.470932     9.443583
+## 2    26.622092    29.406539
+## 3    13.450134    14.442946
+## 4    18.525592    19.408051
 ```
 
 ```r
@@ -209,39 +209,39 @@ fit$cluster # cluster ID for each observation
 
 ```
 ##              Alabama               Alaska              Arizona 
-##                    1                    1                    3 
+##                    4                    3                    2 
 ##             Arkansas           California             Colorado 
-##                    1                    1                    4 
+##                    3                    4                    3 
 ##          Connecticut             Delaware District of Columbia 
-##                    4                    3                    3 
+##                    3                    2                    4 
 ##              Florida              Georgia               Hawaii 
-##                    2                    1                    3 
+##                    2                    4                    4 
 ##                Idaho             Illinois              Indiana 
-##                    4                    4                    4 
+##                    1                    3                    3 
 ##                 Iowa               Kansas             Kentucky 
-##                    4                    4                    1 
+##                    1                    1                    3 
 ##            Louisiana                Maine             Maryland 
-##                    3                    4                    1 
+##                    2                    1                    4 
 ##        Massachusetts             Michigan            Minnesota 
-##                    4                    1                    4 
+##                    3                    3                    1 
 ##          Mississippi             Missouri              Montana 
-##                    1                    1                    4 
+##                    4                    3                    3 
 ##             Nebraska               Nevada        New Hampshire 
-##                    4                    3                    4 
-##           New Jersey           New Mexico             New York 
 ##                    1                    2                    1 
+##           New Jersey           New Mexico             New York 
+##                    4                    2                    4 
 ##       North Carolina         North Dakota                 Ohio 
-##                    1                    4                    4 
+##                    4                    1                    1 
 ##             Oklahoma               Oregon         Pennsylvania 
-##                    1                    1                    4 
+##                    3                    3                    3 
 ##         Rhode Island       South Carolina         South Dakota 
-##                    4                    3                    4 
+##                    3                    2                    1 
 ##            Tennessee                Texas                 Utah 
-##                    1                    1                    4 
+##                    3                    4                    3 
 ##              Vermont             Virginia           Washington 
-##                    4                    4                    4 
+##                    1                    3                    3 
 ##        West Virginia            Wisconsin              Wyoming 
-##                    4                    4                    4
+##                    3                    1                    1
 ```
 We can observe from the cluster means that cluster 3 has the largest mean crash rate values and cluster 4 has the lowest
 
