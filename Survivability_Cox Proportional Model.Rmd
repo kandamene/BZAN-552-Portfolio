@@ -1,0 +1,203 @@
+---
+title: "Post 3 Survivability Analysis"
+output: 
+  html_document:
+    keep_md: true
+---
+
+## Data
+
+This exercise utlises data from the Fatality Analysis Reporting System (FARS) for roadway crashes which invovled in at least one death of a pedestrian or bicyclist.
+
+This datasets are prepared from 15 years worth of data, dowloaded with the pedestrian and bicyclist fatality events extracted. 3 final datasets of 5 year aggregates are finally prepared for use in this study.
+
+
+```{r}
+#cleaning data
+library(readr)
+# Load the car package
+library(car)
+
+ttd0206pedbike <- read_csv("ttd0206pedbike_plus1.csv") #5 year aggregated data from 2002 to 2006
+ttd0711pedbike <- read_csv("ttd0711pedbike_plus1.csv") #5 year aggregated data from 2007 to 2011
+ttd1216pedbike <- read_csv("ttd1216pedbike_plus1.csv") #5 year aggregated data from 2012 to 2016
+
+```
+
+The dataset contains varaible with information onn the characteristics of the person invovled in the crash, and the attributes of the environment and situation relating to the crash.
+Most of the variables are binary or nominal in nature and can be explained only by the data dictionary found here (https://www.nber.org/fars/ftp.nhtsa.dot.gov/fars/FARS-DOC/Analytical%20User%20Guide/USERGUIDE-2015.pdf)
+
+```{r}
+ttd0206pedbikeDOA <- subset(ttd0206pedbike,SEX < 3 ,select = STATE:ttd_mins)
+ttd0711pedbikeDOA <- subset(ttd0711pedbike,SEX < 3 ,select = STATE:ttd_mins)
+ttd1216pedbikeDOA <- subset(ttd1216pedbike,SEX < 3 ,select = STATE:ttd_mins)
+
+ttd0206pedbikeDOA <- subset(ttd0206pedbikeDOA,HOSPITAL < 9 ,select = STATE:ttd_mins)
+ttd0711pedbikeDOA <- subset(ttd0711pedbikeDOA,HOSPITAL < 9 ,select = STATE:ttd_mins)
+ttd1216pedbikeDOA <- subset(ttd1216pedbikeDOA,HOSPITAL < 9 ,select = STATE:ttd_mins)
+
+ttd0206pedbikeDOA <- subset(ttd0206pedbikeDOA,AGE < 99 ,select = STATE:ttd_mins)
+ttd0711pedbikeDOA <- subset(ttd0711pedbikeDOA,AGE < 99 ,select = STATE:ttd_mins)
+ttd1216pedbikeDOA <- subset(ttd1216pedbikeDOA,AGE < 99 ,select = STATE:ttd_mins)
+```
+ 
+Our data preparation invovles removing variables with "unknown" elements from our three selected attributes of interest (Age of pedestrian: continuous, sex: 1-male 2-female, Hospital: 0-was not transported to the hospital 1-was transported to the hospital)
+ 
+Our dependant variable for the analysis is the "ttd_min" variable which is the time to death of the victim as measured in minutes.
+
+## Survivability Analysis
+
+The Cox proportional-hazards model (Cox, 1972) is essentially a regression model commonly used statistical in medical research for investigating the association between the survival time of patients and one or more predictor variables.
+
+The Cox proportional hazards model makes sevral assumptions. Thus, it is important to assess whether a fitted Cox regression model adequately describes the data.
+
+```{r}
+library(survival)
+library(survminer)
+library(survivalAnalysis)
+# compute the survival probability by sex.
+fit.sex <- survfit(Surv(ttd_mins) ~ SEX, data = ttd0206pedbikeDOA)
+print(fit.sex)
+summary(fit.sex)$table
+
+# compute the survival probability by HOSPITAL
+fit.hsp <- survfit(Surv(ttd_mins) ~ HOSPITAL, data = ttd0206pedbikeDOA)
+print(fit.hsp)
+summary(fit.hsp)$table
+```
+
+We may wish to display how estimated survival depends upon the value of a covariate of interest.
+Here we explore the two binary variables in our models on the survivability of the victim
+
+```{r}
+# Change color, linetype by strata, risk.table color by strata
+ggsurvplot(fit.sex,
+           pval = TRUE, conf.int = FALSE,
+           risk.table = TRUE, # Add risk table
+           xlab = "Time in minutes",   # customize X axis label.
+           risk.table.col = "strata", # Change risk table color by groups
+           linetype = "strata", # Change line type by groups
+           surv.median.line = "hv", # Specify median survival
+           legend.labs = c("Male", "Female"),    # change legend labels.
+           break.time.by = 100,
+           xlim = c(0, 300)
+)
+
+# Change color, linetype by strata, risk.table color by strata
+ggsurvplot(fit.hsp,
+           pval = TRUE, conf.int = FALSE,
+           risk.table = TRUE, # Add risk table
+           xlab = "Time in minutes",   # customize X axis label.
+           risk.table.col = "strata", # Change risk table color by groups
+           linetype = "strata", # Change line type by groups
+           surv.median.line = "hv", # Specify median survival
+           legend.labs = c("Not Hospitalised", "Hospitalised"),    # change legend labels.
+           break.time.by = 100,
+           palette = c("#E7B800", "#2E9FDF"), # custom color pale
+           xlim = c(0, 300)
+)
+
+```
+From the first plot on sex difference we see that females have a higher survivability rate than males.
+
+We also see a very large and significant difference in the rate of survivability between victims who were hospitalised and who weren't.
+
+```{r}
+#Multivariate Cox Regression
+res.cox1 <- coxph(Surv(ttd_mins) ~ AGE + SEX +  HOSPITAL, data =  ttd0206pedbikeDOA)
+summary(res.cox1)
+
+res.cox2 <- coxph(Surv(ttd_mins) ~ AGE + SEX +  HOSPITAL, data =  ttd0711pedbikeDOA)
+summary(res.cox2)
+
+res.cox3 <- coxph(Surv(ttd_mins) ~ AGE + SEX +  HOSPITAL, data =  ttd1216pedbikeDOA)
+summary(res.cox3)
+
+sum0206 <- surv_summary(survfit(res.cox1, data = ttd0206pedbikeDOA))
+sum0711 <- surv_summary(survfit(res.cox2, data = ttd0711pedbikeDOA))
+sum1216 <- surv_summary(survfit(res.cox3, data = ttd1216pedbikeDOA))
+head(sum0206)
+```
+
+
+```{r}
+test.ph <- cox.zph(res.cox1)
+test.ph
+
+ggcox.1<- ggcoxzph(test.ph)
+ggcox.1$`1`
+ggcox.1$`2`
+ggcox.1$`3`
+```
+
+The proportional hazard assumption is supported by a non-significant relationship between residuals and time, and refuted by a significant relationship. As we observe from the Schoenfeld test, there is independence between residuals and time for sex, but not for age and hospitalization.
+
+The process can be repeated for the last two datasets to explore the proportional hazard assumption between the coviariates and the time to death.
+
+## Survivability Comparison Between 5-Year Groups
+
+Since we have explored the influence of the covariates on the survivability of the crash victims, we will now use the analysis methods to plot the survivability of victims in our three datasets and compare the changes over the years.
+
+```{r}
+# Plot the baseline survival function for 2002 to 2006 data
+plot <- ggsurvplot(survfit(res.cox1, data = ttd0206pedbikeDOA), palette = "#2E9FDF",
+           break.time.by = 10000,
+           #xlim = c(0, 500),
+           ggtheme = theme_minimal())+ ggtitle("Plot of baseline survival function for 2002 to 2006 data")
+plot
+
+# Plot the baseline survival function for 2007 to 2011 data
+ggsurvplot(survfit(res.cox2, data = ttd0711pedbikeDOA), palette = "#DF1530",
+           break.time.by = 10000,
+           #xlim = c(0, 500),
+           ggtheme = theme_minimal())+ ggtitle("Plot of baseline survival function for 2007 to 2011 data")
+
+# Plot the baseline survival function for 2012 to 2016 data
+ggsurvplot(survfit(res.cox3, data = ttd1216pedbikeDOA), palette = "#72730C",
+           break.time.by = 10000,
+           #xlim = c(0, 500),
+           ggtheme = theme_minimal())+ ggtitle("Plot of baseline survival function for 2012 to 2016 data")
+
+# 3 way survival function for all 3 datasets
+plot$plot+geom_step(data = sum0711,
+                        mapping = aes(x = time, y = surv),
+                        color = "#DF1530")+geom_step(data = sum1216,
+                                                 mapping = aes(x = time, y = surv),
+                                                 color = "#72730C")+ ggtitle("Plot of 3 way survival function for all 3 datasets")+ theme(legend.position="none")
+```
+
+The Three way plot show us the the years 2007 to 2011 had a better range of survival or car crash victims than the other years (2002-2006 and 2012-2016)
+
+We see from the plots that the greatest decrease inn survivability occurs in the first few minutes after the crash and as such we need to plot the graphs again with the necessary extents to observe the decay function better.
+
+```{r}
+# Plot the baseline survival function for 2002 to 2006 data
+plot <- ggsurvplot(survfit(res.cox1, data = ttd0206pedbikeDOA), palette = "#2E9FDF",
+           break.time.by = 100,
+           xlim = c(0, 500),
+           ggtheme = theme_minimal())+ ggtitle("Plot of baseline survival function for 2002 to 2006 data")
+plot
+
+# Plot the baseline survival function for 2007 to 2011 data
+ggsurvplot(survfit(res.cox2, data = ttd0711pedbikeDOA), palette = "#DF1530",
+           break.time.by = 100,
+           xlim = c(0, 500),
+           ggtheme = theme_minimal())+ ggtitle("Plot of baseline survival function for 2007 to 2011 data")
+
+# Plot the baseline survival function for 2012 to 2016 data
+ggsurvplot(survfit(res.cox3, data = ttd1216pedbikeDOA), palette = "#72730C",
+           break.time.by = 100,
+           xlim = c(0, 500),
+           ggtheme = theme_minimal())+ ggtitle("Plot of baseline survival function for 2012 to 2016 data")
+
+# 3 way survival function for all 3 datasets
+plot$plot+geom_step(data = sum0711,
+                        mapping = aes(x = time, y = surv),
+                        color = "#DF1530")+geom_step(data = sum1216,
+                                                 mapping = aes(x = time, y = surv),
+                                                 color = "#72730C")+ ggtitle("Plot of 3 way survival function for all 3 datasets")+ theme(legend.position="none")
+```
+
+The scaled extent graphs tell us another intereting story about the rate of survival decay for the three datasets of the respective year groups. we observe that the first 30 to 50 mins after an accident occurs are the most crucial in ensuring that the victim has up to 50% chance of survival. we also notice that the last 5 years (2012-2016) show a worrying trend of a reduced rate of survivability which would require further attention and exploration.
+
+this analysis helps us justify the need to explore into more detail the increased safety risk for pedestrian and cyclists on our roadways.
