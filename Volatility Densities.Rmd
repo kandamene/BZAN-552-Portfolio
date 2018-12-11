@@ -23,7 +23,7 @@ test2 <- na.omit(nds_volatility_fulldata) #remove all missing values
 The summary of the data shows a number of missing values in most of the variables.
 There are a few ways to address this issue.
 
-The first is to remove all the datapoints with missing values. In this dataset, removing missing values reduces the dataset from 9593 to 8872, which is an deeltion of about 7.5% of the data.
+The first is to remove all the datapoints with missing values. In this dataset, removing missing values reduces the dataset from 9593 to 8872, which is a deletion of about 7.5% of the data.
 
 Since 7.5% is a minimal value, we can apply this method.
 
@@ -51,7 +51,7 @@ Here we recreate 4 datasets of postive and negative directions of each metric.
 We also create 2 dataset of all the variables separated by the type of metric for further analysis.
 
 
-##Data Visualisation
+## Data Visualisation
 
 Visualizing distributions of data helps us draw inferences about certain statistical metrics such as the difference in means, the range of the data, and the deviations of the distributions of the data.
 Data distributions also allow us to choose the appropriate statistical methodology for analysis.
@@ -104,7 +104,7 @@ s+ geom_vline(data=mu4, aes(xintercept=grp.mean, color=variable),
 ```
 Positive and negative metric of lateral jerk based volatility show similar relationship to each other as their longitudinal counterparts.
 
-##Statistical modelling
+## Statistical modelling
 
 Now that we have observed the distributions and explored their characteristics, we can use a binomial logit model to predict the probabilities of their outcomes based on their volatility measures.
 
