@@ -1,0 +1,199 @@
+---
+title: "Post 1 Data Preparation and Visualization"
+output: 
+  html_document:
+    keep_md: true
+---
+## Data
+
+This exercise makes use of naturalistic driving data from the SHRP-2 study (http://www.trb.org/StrategicHighwayResearchProgram2SHRP2/Blank2.aspx). The data provided here is the computed coefficeint of variation of acceleration/deceleration and jerk, in both longitudinal and lateral directions.
+
+This data set also includes the binary "eventtype"" variable which inform whether the event resulted in an unsafe outcome (1) or a safe outcome (0).
+
+```{r}
+library(foreign)
+nds_volatility_fulldata <- read.csv("nds_volatility_fulldata.csv") #import data
+summary(nds_volatility_fulldata)
+
+library(DMwR)
+manyNAs(nds_volatility_fulldata,0.5) # returns a vector of IDs of the rows with too many NA values (>0.25)
+test <- nds_volatility_fulldata[-manyNAs(nds_volatility_fulldata,0.5),] # with default ratio of 0.5
+test2 <- na.omit(nds_volatility_fulldata) #remove all missing values
+```
+The summary of the data shows a number of missing values in most of the variables.
+There are a few ways to address this issue.
+
+The first is to remove all the datapoints with missing values. In this dataset, removing missing values reduces the dataset from 9593 to 8872, which is an deeltion of about 7.5% of the data.
+
+Since 7.5% is a minimal value, we can apply this method.
+
+Another method is to impute the values by inserting the mean values of the variables where there is missing data.
+
+We will continue with the cleaned data of 8872 events.
+
+```{r}
+library(reshape2)
+test2 <- as.data.frame(test2)
+
+test3 <- melt(data = test2, id.vars = "eventtype", measure.vars = c("Acceleration.longitudinal.direction", "Deceleration.longitudinal.direction"))
+test4 <- melt(data = test2, id.vars = "eventtype", measure.vars = c("Postive.jerk.longitudinal.direction", "Negative.jerk..longitudinal.direction"))
+test5 <- melt(data = test2, id.vars = "eventtype", measure.vars = c("Acceleration.lateral.direction", "Deceleration.lateral.direction"))
+test6 <- melt(data = test2, id.vars = "eventtype", measure.vars = c("Postive.jerk.lateral.direction", "Negative.jerk..lateral.direction"))
+
+test7 <- melt(data = test2, id.vars = "eventtype", measure.vars = c("Acceleration.longitudinal.direction", "Deceleration.longitudinal.direction","Acceleration.lateral.direction", "Deceleration.lateral.direction"))
+
+test8 <- melt(data = test2, id.vars = "eventtype", measure.vars = c("Postive.jerk.longitudinal.direction", "Negative.jerk..longitudinal.direction","Postive.jerk.lateral.direction", "Negative.jerk..lateral.direction"))
+
+```
+
+The melt function allows us to stack the data.
+Here we recreate 4 datasets of postive and negative directions of each metric.
+We also create 2 dataset of all the variables separated by the type of metric for further analysis.
+
+
+##Data Visualisation
+
+Visualizing distributions of data helps us draw inferences about certain statistical metrics such as the difference in means, the range of the data, and the deviations of the distributions of the data.
+Data distributions also allow us to choose the appropriate statistical methodology for analysis.
+
+```{r}
+library(ggplot2)
+# Basic density
+p <- ggplot(test4, aes(x=value, fill = variable)) + 
+  geom_density(alpha = 0.5)+ coord_cartesian(xlim = c(0, 3)) + scale_fill_discrete (name="Volatilities")
+# Add mean line
+library(plyr)
+mu <- ddply(test4, "variable", summarise, grp.mean=mean(value))
+p+ geom_vline(data=mu, aes(xintercept=grp.mean, color=variable),
+             linetype="dashed")
+```
+We observe very similar distributions for the positive and negative metric of longitudinal jerk based volatility. yet we also observe different ranges of the data and a difference in means.
+
+```{r}
+# Basic density
+q <- ggplot(test3, aes(x=value, fill = variable)) + 
+  geom_density(alpha = 0.5)+ scale_fill_discrete (name="Volatilities") + coord_cartesian(xlim = c(0, 3)) 
+# Add mean line
+library(plyr)
+mu2 <- ddply(test3, "variable", summarise, grp.mean=mean(value))
+q+ geom_vline(data=mu2, aes(xintercept=grp.mean, color=variable),
+             linetype="dashed")
+```
+Acceleration/Deceleration longitudinal volatility has a more normal distribution and similar means.
+
+```{r}
+# Basic density
+r <- ggplot(test5, aes(x=value, fill = variable)) + 
+  geom_density(alpha = 0.5)+ coord_cartesian(xlim = c(0, 3)) + scale_fill_discrete (name="Volatilities")
+# Add mean line
+library(plyr)
+mu3 <- ddply(test5, "variable", summarise, grp.mean=mean(value))
+r+ geom_vline(data=mu3, aes(xintercept=grp.mean, color=variable),
+             linetype="dashed")
+```
+Acceleration/Deceleration lateral volatility are normally distributed with disimilar means.
+
+```{r}
+# Basic density
+s <- ggplot(test6, aes(x=value, fill = variable)) + 
+  geom_density(alpha = 0.5)+ scale_fill_discrete (name="Volatilities") + coord_cartesian(xlim = c(0, 3)) # Add mean line
+library(plyr)
+mu4 <- ddply(test6, "variable", summarise, grp.mean=mean(value))
+s+ geom_vline(data=mu4, aes(xintercept=grp.mean, color=variable),
+             linetype="dashed")
+```
+Positive and negative metric of lateral jerk based volatility show similar relationship to each other as their longitudinal counterparts.
+
+##Statistical modelling
+
+Now that we have observed the distributions and explored their characteristics, we can use a binomial logit model to predict the probabilities of their outcomes based on their volatility measures.
+
+```{r}
+mylogit.1 <- glm(eventtype ~ Postive.jerk.longitudinal.direction + Negative.jerk..longitudinal.direction + Postive.jerk.lateral.direction + Negative.jerk..lateral.direction, data =  test2, family = "binomial")
+summary(mylogit.1)
+```
+
+As we observe from the statistical output of the model that most of the metrics are significant in predicting the event outcome. the AIC value of this model is 3165.2
+
+```{r}
+mylogit.2 <- glm(eventtype ~ Acceleration.longitudinal.direction + Deceleration.longitudinal.direction + Acceleration.lateral.direction + Deceleration.lateral.direction, data =  test2, family = "binomial")
+summary(mylogit.2)
+```
+
+As we observe from the statistical output of the model that the metrics are very significant in predicting the event outcome. The AIC of this model is 3907.6 which is larger than 3165.2 and thus shows that the previous model and the metrics used are a btter fitting model than this model with the selected metrics.
+
+```{r}
+covariates <- c("Acceleration.longitudinal.direction", "Deceleration.longitudinal.direction","Acceleration.lateral.direction", "Deceleration.lateral.direction")
+univ_formulas <- sapply(covariates,
+                        function(x) as.formula(paste('eventtype ~', x)))
+
+univ_models <- lapply(univ_formulas, function(x){glm(x, data = test2, family = "binomial")})
+univ_models
+
+covariates.1 <- c("Postive.jerk.longitudinal.direction", "Negative.jerk..longitudinal.direction","Postive.jerk.lateral.direction", "Negative.jerk..lateral.direction")
+univ_formulas.1 <- sapply(covariates.1,
+                        function(x) as.formula(paste('eventtype ~', x)))
+
+univ_models.1 <- lapply(univ_formulas.1, function(x){glm(x, data = test2, family = "binomial")})
+univ_models.1
+```
+
+Fitting Univariate models of the variables allows us to predict the individual probabilities of each event with regard to each selected covariate.
+
+After we have predidcted the proabilities of each individual event as per the selected variable, we plot the probability curves of the events and compare the curves of each variable.
+
+```{r}
+newdata <- test2[c(2)]
+newdata$probabilities <- univ_models$Acceleration.longitudinal.direction$fitted.values
+newdata <- melt(data = newdata, id.vars = "probabilities", measure.vars = c("Acceleration.longitudinal.direction"))
+
+newdata.2 <- test2[c(3)]
+newdata.2$probabilities <- univ_models$Deceleration.longitudinal.direction$fitted.values
+newdata.2 <- melt(data = newdata.2, id.vars = "probabilities", measure.vars = c("Deceleration.longitudinal.direction"))
+
+newdata.3 <- test2[c(4)]
+newdata.3$probabilities <- univ_models$Acceleration.lateral.direction$fitted.values
+newdata.3 <- melt(data = newdata.3, id.vars = "probabilities", measure.vars = c("Acceleration.lateral.direction"))
+
+newdata.4 <- test2[c(5)]
+newdata.4$probabilities <- univ_models$Deceleration.lateral.direction$fitted.values
+newdata.4 <- melt(data = newdata.4, id.vars = "probabilities", measure.vars = c("Deceleration.lateral.direction"))
+
+newdata.5 <- test2[c(6)]
+newdata.5$probabilities <- univ_models.1$Postive.jerk.longitudinal.direction$fitted.values
+newdata.5 <- melt(data = newdata.5, id.vars = "probabilities", measure.vars = c("Postive.jerk.longitudinal.direction"))
+
+newdata.7 <- test2[c(8)]
+newdata.7$probabilities <- univ_models.1$Postive.jerk.lateral.direction$fitted.values
+newdata.7 <- melt(data = newdata.7, id.vars = "probabilities", measure.vars = c("Postive.jerk.lateral.direction"))
+
+newdata.6 <- test2[c(7)]
+newdata.6$probabilities <- univ_models.1$Negative.jerk..longitudinal.direction$fitted.values
+newdata.6 <- melt(data = newdata.6, id.vars = "probabilities", measure.vars = c("Negative.jerk..longitudinal.direction"))
+
+newdata.8 <- test2[c(9)]
+newdata.8$probabilities <- univ_models.1$Negative.jerk..lateral.direction$fitted.values
+newdata.8 <- melt(data = newdata.8, id.vars = "probabilities", measure.vars = c("Negative.jerk..lateral.direction"))
+
+covacc.n <- rbind(newdata, newdata.2, newdata.3, newdata.4)
+covjerk.n <- rbind(newdata.5, newdata.6, newdata.7, newdata.8)
+```
+We create two datasets of the probabilities of the events for plotting.
+
+```{r}
+library(readr)
+covjerk <- read_csv("covjerk.csv") #cleaned the dataset labeling
+covacc <- read_csv("covacc.csv")
+```
+
+```{r}
+library(ggplot2)
+# Basic scatter plot
+ggplot(covacc, aes(y=probability, x=volatility, colour=vol.))+geom_line(size=1)+ theme(legend.position = c(.77, .2))
+
+ggplot(covjerk,aes(y=probability, x=volatility, colour=vol.))+geom_line(size=1)+ coord_cartesian(xlim = c(0,6))+ theme(legend.position = c(.72, .2))
+```
+
+We observe that jerk based volatilities are more sensitive to the outcome of the event than acceleration/deceleration volatilities.
+
+
